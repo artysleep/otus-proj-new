@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+
+  nf-elastic:
+    image: elasticsearch:${STACK_VERSION}
+    container_name: nf-elastic
+    
+    volumes:
+      - /home/artys/docker/volumes/es:/usr/share/elasticsearch/data
+
+    networks:
+      nf-net:
+        ipv4_address: 192.168.30.2
+
+    environment:
+      cluster.name: otus-proj
+      bootstrap.memory_lock: 'true'
+      network.host: 0.0.0.0
+      http.port: ${ELASTIC_PORT}
+      discovery.type: 'single-node'
+      indices.query.bool.max_clause_count: 8192
+      search.max_buckets: 250000
+      action.destructive_requires_name: 'true'
+      xpack.security.enabled: false
+      ELASTIC_USERNAME: ${ELASTIC_USER}      
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ES_JAVA_OPTS: '-Xms4g -Xmx4g'
+      xpack.license.self_generated.type: ${LICENSE}
+    
+    healthcheck:
+      test:     
+        [
+          "CMD-SHELL",
+          "curl -s --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} -X GET http://${FELASTIC_HOST}/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  nf-kibana:
+    image: kibana:${STACK_VERSION}
+    container_name: 
+      nf-kibana
+#    restart: 'no'
+    depends_on:
+      nf-elastic:
+        condition: service_healthy
+    networks:
+      nf-net:
+        ipv4_address: 192.168.30.3
+#    network_mode: host
+    ports: 
+      - "5601:5601"
+
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: ${KIBANA_PORT}
+      SERVER_MAXPAYLOADBYTES: 8388608
+      ELASTICSEARCH_HOSTS: ${ELASTIC_HOST}
+      ELASTIC_USERNAME: ${ELASTIC_USER}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_REQUESTTIMEOUT: 132000
+      ELASTICSEARCH_SHARDTIMEOUT: 120000
+      KIBANA_DEFAULTAPPID: "dashboard/653cf1e0-2fd2-11e7-99ed-49759aed30f5"
+      KIBANA_AUTOCOMPLETETIMEOUT: 3000
+      KIBANA_AUTOCOMPLETETERMINATEAFTER: 2500000
+      SERVER_PUBLICBASEURL: http://${HOSTNAME}:5601
+    
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I ${FKIBANA_HOST} | grep -q 'HTTP/1.1 302 Found'",
+         ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  nf-filebeat:     
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    container_name: 
+      nf-filebeat
+    depends_on:
+      nf-elastic:
+        condition: service_healthy
+      nf-kibana:
+        condition: service_healthy
+    configs:
+      - source: fb_config
+        target: /usr/share/filebeat/filebeat.yml
+ 
+#    networks:
+#      nf-net:
+#        ipv4_address: 192.168.30.4
+    network_mode: host    
+
+    environment:
+      KIBANA_HOST: ${FKIBANA_HOST}
+      ELASTICS_HOST: ${FELASTIC_HOST}
+      ELASTIC_USER: ${ELASTIC_USER}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+
+networks: 
+  nf-net: 
+    name: nf-net 
+    ipam: 
+      config: 
+        - subnet: "192.168.30.0/24"
+          gateway: "192.168.30.1"
+
+configs:
+  fb_config:
+    file: ./config/filebeat.docker.yml
