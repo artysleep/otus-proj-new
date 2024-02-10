@@ -1,7 +1,7 @@
 filebeat.modules:
 - module: system
-  syslog:
-    enabled: true
+  #syslog:
+  #  enabled: true
   auth:
     enabled: true
 - module: auditd
@@ -10,34 +10,26 @@ filebeat.modules:
     # - CentOS does not need us to install the audit system, it ships as standard. If you are using Ubuntu, though,
     # this is probably something you would want to install. (sudo apt-get install -y auditd audispd-plugins)
     enabled: true
-- module: netflow
+- module: cef
   log:
     enabled: true
     var:
-      netflow_host: localhost
-      netflow_port: 2055
+      syslog_host: ${BINDING_IP}
+      syslog_port: ${CEF_PORT}
+
+#============================= Innputs =======================================
 
 filebeat.inputs:
- - type: netflow
-   max_message_size: 10KiB
-   host: "0.0.0.0:2055"
-   protocols: [ v5, v9, ipfix ]
-   expiration_timeout: 30m
-   queue_size: 8192
-#- type: container
-#  enabled: true
-#  paths:
-#    -/var/lib/docker/containers/*/*.log
-#  stream: all # can be all, stdout or stderr
-
-#========================== Filebeat autodiscover ==============================
-# See this URL on how to run Apache2 Filebeat module: # https://www.elastic.co/guide/en/beats/filebeat/current/running-on-docker.html
-#filebeat.autodiscover:
-#  providers:
-#    - type: docker
-      # https://www.elastic.co/guide/en/beats/filebeat/current/configuration-autodiscover-hints.html
-      # This URL alos contains instructions on multi-line logs
-#      hints.enabled: true
+  - type: netflow
+    max_message_size: 10KiB
+    host: "${BINDING_IP}:${NF_PORT}"
+    protocols: [ v5, v9, ipfix ]
+    expiration_timeout: 30m
+    queue_size: 8192
+  - type: syslog
+    format: auto
+    protocol.udp:
+      host: "${BINDING_IP}:${SYSLOG_PORT}"
 
 #================================ Processors ===================================
 processors:
@@ -47,12 +39,24 @@ processors:
     format: offset
 - add_host_metadata:
     netinfo.enabled: true
+- dns:
+    type: reverse
+    action: append
+    fields:
+      source.ip: source.domain
+      destination.ip: destination.domain
+      #server.ip: server.domain
+      #client.ip: client.domain
+    nameservers: ['192.168.88.1', '8.8.8.8']
+    timeout: 500ms
+    tag_on_failure: [_dns_reverse_lookup_failed]
 
 #========================== Elasticsearch output ===============================
 output.elasticsearch:
   hosts: ["192.168.30.2:9200"]
   username: ${ELASTIC_USER}
   password: ${ELASTIC_PASSWORD}
+  pipeline: geoip-info
 
 #============================== Dashboards =====================================
 setup.dashboards:
