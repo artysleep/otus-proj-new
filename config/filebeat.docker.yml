@@ -1,15 +1,15 @@
 filebeat.modules:
-- module: system
+#- module: system
   #syslog:
   #  enabled: true
-  auth:
-    enabled: true
-- module: auditd
-  log:
+  #auth:
+  #  enabled: true
+#- module: auditd
+  #log:
     # - Does not look like Auditd is supported in Alpine linux: https://github.com/linuxkit/linuxkit/issues/52
     # - CentOS does not need us to install the audit system, it ships as standard. If you are using Ubuntu, though,
     # this is probably something you would want to install. (sudo apt-get install -y auditd audispd-plugins)
-    enabled: true
+  #  enabled: true
 - module: cef
   log:
     enabled: true
@@ -20,16 +20,24 @@ filebeat.modules:
 #============================= Innputs =======================================
 
 filebeat.inputs:
+    ### NETFLOW ###
   - type: netflow
     max_message_size: 10KiB
     host: "${BINDING_IP}:${NF_PORT}"
     protocols: [ v5, v9, ipfix ]
     expiration_timeout: 30m
     queue_size: 8192
+    #index: "%{[agent.name]}-netflow-%{+yyyy.MM.dd}"
+    #pipeline: geoip-info
+    
+    ### SYSLOG ###
   - type: syslog
-    format: auto
+    format: rfc3164
+    var.convert_timezone: false
     protocol.udp:
       host: "${BINDING_IP}:${SYSLOG_PORT}"
+    index: "syslog-%{[agent.name]}-%{+yyyy.MM.dd}"
+    #pipeline: mikrotik-parser
 
 #================================ Processors ===================================
 processors:
@@ -47,7 +55,7 @@ processors:
       destination.ip: destination.domain
       #server.ip: server.domain
       #client.ip: client.domain
-    nameservers: ['192.168.88.1', '8.8.8.8']
+    nameservers: ['8.8.8.8', '192.168.88.1']
     timeout: 500ms
     tag_on_failure: [_dns_reverse_lookup_failed]
 
@@ -58,9 +66,10 @@ output.elasticsearch:
   password: ${ELASTIC_PASSWORD}
   pipeline: geoip-info
 
+
 #============================== Dashboards =====================================
-setup.dashboards:
-  enabled: true
+# setup.dashboards:
+#   enabled: true
 
 #============================== Kibana =========================================
 setup.kibana:

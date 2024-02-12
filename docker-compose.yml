@@ -14,7 +14,7 @@ services:
         ipv4_address: 192.168.30.2
 
     environment:
-      cluster.name: otus-proj
+      cluster.name: 'otus-proj'
       bootstrap.memory_lock: 'true'
       network.host: 0.0.0.0
       http.port: ${ELASTIC_PORT}
@@ -23,10 +23,11 @@ services:
       search.max_buckets: 250000
       action.destructive_requires_name: 'true'
       xpack.security.enabled: false
-      ELASTICSEARCH_USERNAME: ${ELASTIC_USER}      
-      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTIC_USERNAME: ${ELASTIC_USER}      
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ES_JAVA_OPTS: '-Xms4g -Xmx4g'
       xpack.license.self_generated.type: ${LICENSE}
+      http.compression: 'true'
     
     healthcheck:
       test:     
@@ -34,9 +35,9 @@ services:
           "CMD-SHELL",
           "curl -s --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} -X GET http://${FELASTIC_HOST}/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'",
         ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 20s
+      timeout: 20s
+      retries: 10
 
   nf-kibana:
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
@@ -79,7 +80,7 @@ services:
     network_mode: host
     environment:
       KIBANA_HOST: ${FKIBANA_HOST}
-      ELASTICS_HOST: ${FELASTIC_HOST}
+      ELASTIC_HOST: ${FELASTIC_HOST}
       ELASTIC_USER: ${ELASTIC_USER}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       BINDING_IP: ${MAIN_HOST_IP}
@@ -88,9 +89,9 @@ services:
       SYSLOG_PORT: ${SYSLOG_PORT}
     healthcheck:
       test: filebeat test config
-      interval: 10s
-      timeout: 10s
-      retries: 10
+      interval: 15s
+      timeout: 15s
+      retries: 5
 
   nf-nginx:
     image: nginx:latest
@@ -110,6 +111,11 @@ services:
       - ./volumes/nginx:/etc/nginx
     ports: 
       - "8443:443"
+    healthcheck:
+      test: service nginx status || exit 1
+      interval: 15s
+      timeout: 15s
+      retries: 5
       
 
 

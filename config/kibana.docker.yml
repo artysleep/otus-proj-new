@@ -2,6 +2,7 @@ server.host: "0.0.0.0"
 server.shutdownTimeout: "5s"
 elasticsearch.hosts: ["http://192.168.30.2:9200"]
 monitoring.ui.container.elasticsearch.enabled: true
+server.publicBaseUrl: http://otus-proj.lab.local
 uiSettings:
   overrides:
     "theme:darkMode": true
