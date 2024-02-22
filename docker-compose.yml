@@ -14,29 +14,30 @@ services:
         ipv4_address: 192.168.30.2
 
     environment:
+      TZ: Europe/Moscow
       cluster.name: 'otus-proj'
       bootstrap.memory_lock: 'true'
-      network.host: 0.0.0.0
+      network.host: ${SERVER_HOST}
       http.port: ${ELASTIC_PORT}
+      ELASTIC_USERNAME: ${ELASTIC_USER}      
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      xpack.license.self_generated.type: ${LICENSE}
       discovery.type: 'single-node'
       indices.query.bool.max_clause_count: 8192
       search.max_buckets: 250000
       action.destructive_requires_name: 'true'
       xpack.security.enabled: false
-      ELASTIC_USERNAME: ${ELASTIC_USER}      
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ES_JAVA_OPTS: '-Xms4g -Xmx4g'
-      xpack.license.self_generated.type: ${LICENSE}
       http.compression: 'true'
     
     healthcheck:
       test:     
         [
           "CMD-SHELL",
-          "curl -s --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} -X GET http://${FELASTIC_HOST}/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'",
+          "curl -s --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} -X GET ${FELASTIC_HOST}/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'",
         ]
-      interval: 20s
-      timeout: 20s
+      interval: 10s
+      timeout: 10s
       retries: 10
 
   nf-kibana:
@@ -49,8 +50,10 @@ services:
     networks:
       nf-net:
         ipv4_address: 192.168.30.3
-
-      
+    environment:
+      TZ: Europe/Moscow
+      ELASTIC_HOST: ${FELASTIC_HOST}
+      SERVER_HOST: ${SERVER_HOST}
     configs:
       - source: kibana_config
         target: /usr/share/kibana/config/kibana.yml
@@ -62,8 +65,8 @@ services:
           "curl -s -I ${FKIBANA_HOST} | grep -q 'HTTP/1.1 302 Found'",
          ]
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 10s
+      retries: 5
 
   nf-filebeat:     
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
@@ -79,6 +82,7 @@ services:
         target: /usr/share/filebeat/filebeat.yml
     network_mode: host
     environment:
+      TZ: Europe/Moscow
       KIBANA_HOST: ${FKIBANA_HOST}
       ELASTIC_HOST: ${FELASTIC_HOST}
       ELASTIC_USER: ${ELASTIC_USER}
@@ -87,10 +91,11 @@ services:
       NF_PORT: ${NF_PORT}
       CEF_PORT: ${CEF_PORT}
       SYSLOG_PORT: ${SYSLOG_PORT}
+      DNS_IP: ${DNS_IP}
     healthcheck:
       test: filebeat test config
-      interval: 15s
-      timeout: 15s
+      interval: 10s
+      timeout: 10s
       retries: 5
 
   nf-nginx:
@@ -107,6 +112,8 @@ services:
     networks:
       nf-net:
         ipv4_address: 192.168.30.4
+    environment:
+      TZ: Europe/Moscow
     volumes:
       - ./volumes/nginx:/etc/nginx
     ports: 
@@ -117,8 +124,6 @@ services:
       timeout: 15s
       retries: 5
       
-
-
 networks: 
   nf-net: 
     name: nf-net 
