@@ -64,7 +64,7 @@ services:
           "CMD-SHELL",
           "curl -s -I ${FKIBANA_HOST} | grep -q 'HTTP/1.1 302 Found'",
          ]
-      interval: 15s
+      interval: 10s
       timeout: 10s
       retries: 5
 
