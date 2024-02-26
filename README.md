@@ -6,6 +6,4 @@
 systemctl start nf-app
 ```
 
-РК и восстановление проекта автоматизированы, можно посмотреть [здесь].
-[здесь]: <https://github.com/artysleep/otus-proj-automatization>
-
+РК и восстановление проекта автоматизированы, можно посмотреть [здесь](https://github.com/artysleep/otus-proj-automatization/blob/main/README.md).
