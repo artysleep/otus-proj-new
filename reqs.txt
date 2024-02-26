@@ -1,0 +1,419 @@
+# Click the Variables button, above, to create your own variables.
+GET ${exampleVariable1} // _search
+{
+  "query": {
+    "${exampleVariable2}": {} // match_all
+  }
+}
+
+GET _index_template/filebeat-8.12.1
+
+PUT _data_stream/filebeat-syslog
+
+PUT _data_stream/cef-filebeat
+
+PUT _data_stream/netflow-filebeat
+
+PUT _data_stream/syslog-filebeat
+
+PUT my-index-000001/_doc/my_id?pipeline=geoip
+{
+  "ip": "89.160.20.128"
+}
+GET my-index-000001/_doc/my_id
+
+GET _ingest/pipeline/geoip
+
+PUT _ingest/pipeline/geoip
+{
+  "description" : "Add geoip info",
+  "processors" : [
+    {
+      "geoip" : {
+        "field" : "cleint.ip",
+        "target_field": "client.geo",
+        "ignore_missing": true
+      }
+    }
+  ]
+}
+
+
+
+PUT _ingest/pipeline/geoip-info2
+{
+  "description" : "Add geoip info",
+  "processors" : [
+    {
+      "geoip" : {
+        "field" : "source.ip"
+      }
+    }
+  ]
+}
+PUT my-index-000001/_doc/my_id?pipeline=geoip-info
+{
+  "client.ip": "89.160.20.128"
+}
+GET my-index-000001/_doc/my_id
+
+
+PUT _ingest/pipeline/geoip-info
+
+
+PUT _ingest/pipeline/geoip-info2
+{
+  "description" : "Add geoip info",
+  "processors" : [
+    {
+      "geoip" : {
+        "field" : "source.ip",
+        "target_field": "source.geo"
+      }
+    }
+  ]
+}
+
+PUT _ingest/pipeline/geoip-info2
+{
+  "description": "Add geoip info",
+  "processors": [
+    {
+      "rename": {
+        "field": "destination.ip",
+        "target_field": "destination_ip",
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "destination_ip",
+        "target_field": "destination.geo"
+      }
+    }
+
+  ]
+}
+
+PUT my-index-000001/_doc/my_id?pipeline=geoip-info2
+{
+  "fields": {
+   
+    "source.ip": [
+      "10.252.88.67"
+    ],
+    "destination.ip": [
+      "34.193.113.164"
+    ]
+  }
+}
+
+GET my-index-000001/_doc/my_id
+
+
+PUT _ingest/pipeline/geoip-info
+{
+  "description": "Add geoip info",
+  "processors": [
+    {
+      "geoip": {
+        "field": "client.ip",
+        "target_field": "client.geo",
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "database_file": "GeoLite2-ASN.mmdb",
+        "field": "client.ip",
+        "target_field": "client.as",
+        "properties": [
+          "asn",
+          "organization_name"
+        ],
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "source.ip",
+        "target_field": "source.geo",
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "database_file": "GeoLite2-ASN.mmdb",
+        "field": "source.ip",
+        "target_field": "source.as",
+        "properties": [
+          "asn",
+          "organization_name"
+        ],
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "destination.ip",
+        "target_field": "destination.geo",
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "database_file": "GeoLite2-ASN.mmdb",
+        "field": "destination.ip",
+        "target_field": "destination.as",
+        "properties": [
+          "asn",
+          "organization_name"
+        ],
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "server.ip",
+        "target_field": "server.geo",
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "database_file": "GeoLite2-ASN.mmdb",
+        "field": "server.ip",
+        "target_field": "server.as",
+        "properties": [
+          "asn",
+          "organization_name"
+        ],
+        "ignore_missing": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "host.ip",
+        "target_field": "host.geo",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "server.as.asn",
+        "target_field": "server.as.number",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "server.as.organization_name",
+        "target_field": "server.as.organization.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "client.as.asn",
+        "target_field": "client.as.number",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "client.as.organization_name",
+        "target_field": "client.as.organization.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "source.as.asn",
+        "target_field": "source.as.number",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "source.as.organization_name",
+        "target_field": "source.as.organization.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "destination.as.asn",
+        "target_field": "destination.as.number",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "destination.as.organization_name",
+        "target_field": "destination.as.organization.name",
+        "ignore_missing": true
+      }
+    }
+  ]
+}
+
+
+PUT _ingest/pipeline/infotecs-renamer
+{
+  "description": "infotecs rename cef fields",
+  "processors": [
+    {
+      "rename": {
+        "field": "cef.extensions.deviceHostName",
+        "target_field": "dvchost",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.baseEventCount",
+        "target_field": "cnt",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceCustomString1",
+        "target_field": "cs1",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceCustomString2",
+        "target_field": "cs2",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceCustomString3",
+        "target_field": "cs3",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceCustomString4",
+        "target_field": "cs4",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceCustomString5",
+        "target_field": "cs5",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.deviceDirection",
+        "target_field": "direction",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.destinationPort",
+        "target_field": "dpt",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.destinationAddress",
+        "target_field": "dst",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.device.event_class_id",
+        "target_field": "event_class_id"
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.bytesIn",
+        "target_field": "in",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.name",
+        "target_field": "name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.bytesOut",
+        "target_field": "out",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.transportProtocol",
+        "target_field": "proto",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.Reason",
+        "target_field": "reason",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.sourcePort",
+        "target_field": "spt",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.extensions.sourceAddress",
+        "target_field": "src",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "field": [
+          "agent",
+          "cef",
+          "destination",
+          "ecs",
+          "error",
+          "event",
+          "fileset",
+          "input",
+          "network",
+          "observer",
+          "organization",
+          "process",
+          "service",
+          "source",
+          "suricata",
+          "syslog",
+          "log",
+          "message"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    }
+  ]
+}
+

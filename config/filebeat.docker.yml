@@ -1,0 +1,106 @@
+filebeat.modules:
+#- module: system
+  #syslog:
+  #  enabled: true
+  #auth:
+  #  enabled: true
+#- module: auditd
+  #log:
+    # - Does not look like Auditd is supported in Alpine linux: https://github.com/linuxkit/linuxkit/issues/52
+    # - CentOS does not need us to install the audit system, it ships as standard. If you are using Ubuntu, though,
+    # this is probably something you would want to install. (sudo apt-get install -y auditd audispd-plugins)
+  #  enabled: true
+- module: cef
+  log:
+    enabled: true
+    var:
+      syslog_host: "${BINDING_IP}"
+      syslog_port: "${CEF_PORT}"
+  #pipeline: renamer
+
+#============================= Innputs =======================================
+
+filebeat.inputs:
+    ### NETFLOW ###
+  - type: netflow
+    max_message_size: 10KiB
+    host: "${BINDING_IP}:${NF_PORT}"
+    protocols: [ v5, v9, ipfix ]
+    expiration_timeout: 30m
+    queue_size: 8192
+    #index: "%{[agent.name]}-netflow-"
+    pipeline: geoip-info
+    
+    ### SYSLOG ###
+  - type: syslog
+    format: rfc3164
+    #var.convert_timezone: false
+    protocol.udp:
+      host: "${BINDING_IP}:${SYSLOG_PORT}"
+    #index: 'syslog-%{[agent.name]}'
+    pipeline: 'mikrotik-parser'
+
+#================================ Processors ===================================
+processors:
+- add_cloud_metadata: ~
+- add_docker_metadata: ~
+#- add_locale:
+#    format: offset
+- add_host_metadata: ~
+- dns:
+    type: reverse
+    action: append
+    fields:
+      #source.ip: source.domain
+      #destination.ip: destination.domain
+      server.ip: server.domain
+      client.ip: client.domain
+    nameservers: ["${DNS_IP}"]
+    timeout: 500ms
+    tag_on_failure: [_dns_reverse_lookup_failed]
+
+#========================== Elasticsearch output ===============================
+output.elasticsearch:
+  hosts: ["${ELASTIC_HOST}"]
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  indices:
+    - index: "netflow-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.contains:
+        input.type: "netflow"
+    - index: "cef-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.contains:
+        event.module: "cef"
+    - index: "syslog-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.contains:
+        input.type: "syslog"
+
+
+  # pipelines:
+  #   - pipeline: 'renamer'
+  #     when.contains:
+  #       event.module: 'cef'
+  #   - pipeline: 'mikrotik-parser'
+  #     when.contains:
+  #       input.type: 'syslog'
+  #   - pipeline: 'geoip-info'
+  #     when.contains:
+  #       input.type: 'netflow'
+  
+  
+
+#============================== Dashboards =====================================
+#setup.dashboards:
+#  enabled: true
+#setup.dashboards.index: "netflow-filebeat*"
+#============================== Kibana =========================================
+setup.kibana:
+  host: "${KIBANA_HOST}"
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+
+#============================== Xpack Monitoring ===============================
+xpack.monitoring:
+  enabled: true
+  elasticsearch:
+
