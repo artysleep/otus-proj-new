@@ -8,6 +8,7 @@ services:
     
     volumes:
       - ./volumes/es:/usr/share/elasticsearch/data
+      - log_volume:/usr/share/elasticsearch/logs
 
     networks:
       nf-net:
@@ -15,20 +16,21 @@ services:
 
     environment:
       TZ: Europe/Moscow
-      cluster.name: 'otus-proj'
-      bootstrap.memory_lock: 'true'
+      cluster.name: nf-elastic
+      bootstrap.memory_lock: true
       network.host: ${SERVER_HOST}
       http.port: ${ELASTIC_PORT}
       ELASTIC_USERNAME: ${ELASTIC_USER}      
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       xpack.license.self_generated.type: ${LICENSE}
-      discovery.type: 'single-node'
+      discovery.type: single-node
       indices.query.bool.max_clause_count: 8192
       search.max_buckets: 250000
-      action.destructive_requires_name: 'true'
+      action.destructive_requires_name: true
       xpack.security.enabled: false
-      ES_JAVA_OPTS: '-Xms4g -Xmx4g'
-      http.compression: 'true'
+      ES_JAVA_OPTS: -Xms4g -Xmx4g
+      http.compression: true
+      ES_LOG_STYLE: file
     
     healthcheck:
       test:     
@@ -57,7 +59,8 @@ services:
     configs:
       - source: kibana_config
         target: /usr/share/kibana/config/kibana.yml
-    
+    volumes:
+      - log_volume:/usr/share/kibana/logs/
     healthcheck:
       test:
         [
@@ -81,6 +84,8 @@ services:
       - source: filebeat_config
         target: /usr/share/filebeat/filebeat.yml
     network_mode: host
+    volumes:
+      - log_volume:/usr/share/filebeat/logs
     environment:
       TZ: Europe/Moscow
       KIBANA_HOST: ${FKIBANA_HOST}
@@ -116,6 +121,7 @@ services:
       TZ: Europe/Moscow
     volumes:
       - ./volumes/nginx:/etc/nginx
+      - log_volume:/var/log/nginx
     ports: 
       - "8443:443"
     healthcheck:
@@ -137,3 +143,12 @@ configs:
     file: ./config/filebeat.docker.yml
   kibana_config:
     file: ./config/kibana.docker.yml
+
+volumes:
+  log_volume:
+    name: nf-log-volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind 
+      device: /var/log/nf-app

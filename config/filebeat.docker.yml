@@ -51,8 +51,8 @@ processors:
     type: reverse
     action: append
     fields:
-      #source.ip: source.domain
-      #destination.ip: destination.domain
+      source.ip: source.domain
+      destination.ip: destination.domain
       server.ip: server.domain
       client.ip: client.domain
     nameservers: ["${DNS_IP}"]
@@ -104,3 +104,10 @@ xpack.monitoring:
   enabled: true
   elasticsearch:
 
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: nf-filebeat
+  keepfiles: 7
+  permissions: 0640

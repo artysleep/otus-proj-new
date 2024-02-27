@@ -6,3 +6,12 @@ server.publicBaseUrl: http://otus-proj.lab.local
 uiSettings:
   overrides:
     "theme:darkMode": true
+logging:
+  appenders:
+    file:
+      type: file
+      fileName: /usr/share/kibana/logs/nf-kibana.log
+      layout:
+        type: pattern
+  root:
+    appenders: [file]

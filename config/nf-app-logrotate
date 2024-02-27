@@ -1,0 +1,11 @@
+/var/log/nf-app {
+daily
+start 0
+rotate 5
+minsize 1M
+compress
+#dateext
+delaycompress
+notifempty
+missingok
+}

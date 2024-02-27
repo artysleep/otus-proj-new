@@ -20,10 +20,81 @@ systemctl start nf-app
 
 ```
 Запуск проекта через docker-compose:
-
-![Screenshot 2024-02-26 173922](https://github.com/artysleep/otus-proj-new/assets/7562889/830166b8-d8f5-4ae3-bb0d-41216de50ff8)
+```sh
+✔ ~/docker/otus-proj [master|✚ 4…2] 
+11:12 $ docker-compose up -d
+[+] Running 6/6
+ ⠿ Network nf-net          Created                                                                                                                                                                                          0.2s
+ ⠿ Volume "nf-log-volume"  Created                                                                                                                                                                                          0.0s
+ ⠿ Container nf-elastic    Healthy                                                                                                                                                                                        126.5s
+ ⠿ Container nf-kibana     Healthy                                                                                                                                                                                        126.4s
+ ⠿ Container nf-filebeat   Healthy                                                                                                                                                                                        136.8s
+ ⠿ Container nf-nginx      Started  
+```
 
 Для проверки работоспособности Filebeat и готовности его принимать **_Netflow, Syslog или CEF (пока только от Infotecs)_** можно проверить открытые порты в состоянии прослушивания заданные в файле .env: 
-![Screenshot 2024-02-26 174309](https://github.com/artysleep/otus-proj-new/assets/7562889/82fb0d4a-67b3-4248-9935-fba82c6adc8f)
+```sh
+[artys@otus-proj nf-app]$ ss -ulpn
+State     Recv-Q     Send-Q         Local Address:Port          Peer Address:Port    Process
+UNCONN    0          0                    0.0.0.0:5353               0.0.0.0:*
+UNCONN    0          0              192.168.88.37:6044               0.0.0.0:*        users:(("filebeat",pid=115884,fd=19))
+UNCONN    0          0              192.168.88.37:6055               0.0.0.0:*        users:(("filebeat",pid=115884,fd=17))
+UNCONN    0          0              192.168.88.37:6514               0.0.0.0:*        users:(("filebeat",pid=115884,fd=18))
+UNCONN    0          0                    0.0.0.0:40275              0.0.0.0:*
+UNCONN    0          0                  127.0.0.1:323                0.0.0.0:*
+```
+
+Добавлено логирование компонентов приложения:
+```sh
+[artys@otus-proj nf-app]$ ls -lah
+total 640K
+drwxrwxrwx.  2 root  root  4.0K Feb 27 11:40 .
+drwxr-xr-x. 22 root  root  4.0K Feb 27 10:23 ..
+-rw-r--r--.  1 root  root     0 Feb 27 11:07 error.log
+-rw-rw-r--.  1 artys root  165K Feb 27 11:40 gc.log
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:16 gc.log.00
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:16 gc.log.01
+-rw-rw-r--.  1 artys root   42K Feb 27 11:17 gc.log.02
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:17 gc.log.03
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:17 gc.log.04
+-rw-rw-r--.  1 artys root   98K Feb 27 11:24 gc.log.05
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:24 gc.log.06
+-rw-rw-r--.  1 artys root  2.3K Feb 27 11:24 gc.log.07
+-rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_audit.json
+-rw-rw-r--.  1 artys root  3.3K Feb 27 11:26 nf-elastic_deprecation.json
+-rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_index_indexing_slowlog.json
+-rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_index_search_slowlog.json
+-rw-rw-r--.  1 artys root   41K Feb 27 11:24 nf-elastic.log
+-rw-rw-r--.  1 artys root  113K Feb 27 11:24 nf-elastic_server.json
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-75.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-76.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-77.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-78.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-79.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-80.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-81.ndjson
+-rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-82.ndjson
+-rw-rw-r--.  1 artys artys  27K Feb 27 11:26 nf-kibana.log
+-rw-r--r--.  1 root  root  4.9K Feb 27 11:40 nf-nginx-access.log
+-rw-r--r--.  1 root  root   11K Feb 27 11:26 nf-nginx-error.log
+```
+
+В config есть logrotate, который можно применить для данных логов.
 
 РК и восстановление проекта автоматизированы, можно посмотреть [здесь](https://github.com/artysleep/otus-proj-automatization/tree/main).
+
+
+
+
+
+
+✔ ~/docker/otus-proj [master|✔] 
+09:38 $ mkdir /var/log/nf-app
+mkdir: cannot create directory ‘/var/log/nf-app’: Permission denied
+✘-1 ~/docker/otus-proj [master|✚ 2…1] 
+10:23 $ sudo mkdir /var/log/nf-app
+✔ ~/docker/otus-proj [master|✚ 2…1] 
+10:23 $ chown artys:artys /var/log/nf-app
+chown: changing ownership of '/var/log/nf-app': Operation not permitted
+✘-1 ~/docker/otus-proj [master|✚ 2…1] 
+10:24 $ sudo chown artys:artys /var/log/nf-app
