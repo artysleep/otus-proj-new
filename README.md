@@ -82,19 +82,3 @@ drwxr-xr-x. 22 root  root  4.0K Feb 27 10:23 ..
 В config есть logrotate, который можно применить для данных логов.
 
 РК и восстановление проекта автоматизированы, можно посмотреть [здесь](https://github.com/artysleep/otus-proj-automatization/tree/main).
-
-
-
-
-
-
-✔ ~/docker/otus-proj [master|✔] 
-09:38 $ mkdir /var/log/nf-app
-mkdir: cannot create directory ‘/var/log/nf-app’: Permission denied
-✘-1 ~/docker/otus-proj [master|✚ 2…1] 
-10:23 $ sudo mkdir /var/log/nf-app
-✔ ~/docker/otus-proj [master|✚ 2…1] 
-10:23 $ chown artys:artys /var/log/nf-app
-chown: changing ownership of '/var/log/nf-app': Operation not permitted
-✘-1 ~/docker/otus-proj [master|✚ 2…1] 
-10:24 $ sudo chown artys:artys /var/log/nf-app
