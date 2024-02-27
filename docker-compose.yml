@@ -66,7 +66,7 @@ services:
          ]
       interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
 
   nf-filebeat:     
     image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
