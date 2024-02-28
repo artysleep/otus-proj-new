@@ -17,7 +17,7 @@ services:
     environment:
       TZ: Europe/Moscow
       cluster.name: nf-elastic
-      bootstrap.memory_lock: true
+      bootstrap.memory_lock: 'true'
       network.host: ${SERVER_HOST}
       http.port: ${ELASTIC_PORT}
       ELASTIC_USERNAME: ${ELASTIC_USER}      
@@ -26,11 +26,10 @@ services:
       discovery.type: single-node
       indices.query.bool.max_clause_count: 8192
       search.max_buckets: 250000
-      action.destructive_requires_name: true
-      xpack.security.enabled: false
+      action.destructive_requires_name: 'true'
+      xpack.security.enabled: 'false'
       ES_JAVA_OPTS: -Xms4g -Xmx4g
-      http.compression: true
-      #ES_LOG_STYLE: file
+      http.compression: 'true'
     logging:
       driver: journald
     healthcheck:
@@ -58,9 +57,8 @@ services:
       TZ: Europe/Moscow
       ELASTIC_HOST: ${FELASTIC_HOST}
       SERVER_HOST: ${SERVER_HOST}
-    configs:
-      - source: kibana_config
-        target: /usr/share/kibana/config/kibana.yml
+    volumes:
+      - ./config/kibana.docker.yml:/usr/share/kibana/config/kibana.yml
     #volumes:
     #  - log_volume:/usr/share/kibana/logs/
     logging:
@@ -85,9 +83,8 @@ services:
         condition: service_healthy
       nf-kibana:
         condition: service_healthy
-    configs:
-      - source: filebeat_config
-        target: /usr/share/filebeat/filebeat.yml
+    volumes:
+      -  ./config/filebeat.docker.yml:/usr/share/filebeat/filebeat.yml
     network_mode: host
     #volumes:
     #  - log_volume:/usr/share/filebeat/logs
@@ -147,18 +144,3 @@ networks:
       config: 
         - subnet: "192.168.30.0/24"
           gateway: "192.168.30.1"
-
-configs:
-  filebeat_config:
-    file: ./config/filebeat.docker.yml
-  kibana_config:
-    file: ./config/kibana.docker.yml
-
-# volumes:
-#   log_volume:
-#     name: nf-log-volume
-#     driver: local
-#     driver_opts:
-#       type: none
-#       o: bind 
-#       device: /var/log/nf-app
