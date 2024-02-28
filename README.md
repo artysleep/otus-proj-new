@@ -44,41 +44,23 @@ UNCONN    0          0                    0.0.0.0:40275              0.0.0.0:*
 UNCONN    0          0                  127.0.0.1:323                0.0.0.0:*
 ```
 
-Добавлено логирование компонентов приложения:
+Добавлено логирование компонентов приложения в journald, просмотр логов осуществляется следующим образом:
 ```sh
-[artys@otus-proj nf-app]$ ls -lah
-total 640K
-drwxrwxrwx.  2 root  root  4.0K Feb 27 11:40 .
-drwxr-xr-x. 22 root  root  4.0K Feb 27 10:23 ..
--rw-r--r--.  1 root  root     0 Feb 27 11:07 error.log
--rw-rw-r--.  1 artys root  165K Feb 27 11:40 gc.log
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:16 gc.log.00
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:16 gc.log.01
--rw-rw-r--.  1 artys root   42K Feb 27 11:17 gc.log.02
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:17 gc.log.03
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:17 gc.log.04
--rw-rw-r--.  1 artys root   98K Feb 27 11:24 gc.log.05
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:24 gc.log.06
--rw-rw-r--.  1 artys root  2.3K Feb 27 11:24 gc.log.07
--rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_audit.json
--rw-rw-r--.  1 artys root  3.3K Feb 27 11:26 nf-elastic_deprecation.json
--rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_index_indexing_slowlog.json
--rw-rw-r--.  1 artys root     0 Feb 27 11:17 nf-elastic_index_search_slowlog.json
--rw-rw-r--.  1 artys root   41K Feb 27 11:24 nf-elastic.log
--rw-rw-r--.  1 artys root  113K Feb 27 11:24 nf-elastic_server.json
--rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-75.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-76.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-77.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:39 nf-filebeat-20240227-78.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-79.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-80.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-81.ndjson
--rw-r-----.  1 artys artys 5.5K Feb 27 11:40 nf-filebeat-20240227-82.ndjson
--rw-rw-r--.  1 artys artys  27K Feb 27 11:26 nf-kibana.log
--rw-r--r--.  1 root  root  4.9K Feb 27 11:40 nf-nginx-access.log
--rw-r--r--.  1 root  root   11K Feb 27 11:26 nf-nginx-error.log
+journalctl -b CONTAINER_NAME=nf-elastic
+journalctl -b CONTAINER_NAME=nf-kibana
+journalctl -b CONTAINER_NAME=nf-filebeat
+journalctl -b CONTAINER_NAME=nf-nginx
 ```
-
-В config есть logrotate, который можно применить для данных логов.
+Например:
+```sh
+12:13 $ journalctl -b CONTAINER_NAME=nf-nginx 
+-- Logs begin at Fri 2024-02-09 18:37:36 MSK, end at Wed 2024-02-28 15:07:58 MSK. --
+Feb 28 12:08:20 otus-proj.lab.local 164b8be13eaa[840]: /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+Feb 28 12:08:20 otus-proj.lab.local 164b8be13eaa[840]: /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+```
+Посмотреть логи всех компонентов:
+```sh
+journalctl -b -xu docker.service
+```
 
 РК и восстановление проекта автоматизированы, можно посмотреть [здесь](https://github.com/artysleep/otus-proj-automatization/tree/main).
