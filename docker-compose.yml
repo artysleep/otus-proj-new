@@ -88,6 +88,13 @@ services:
     network_mode: host
     #volumes:
     #  - log_volume:/usr/share/filebeat/logs
+    # networks:
+    #   nf-net:
+    #     ipv4_address: 192.168.30.4
+    # ports: 
+    #   - "6044:6044/udp"
+    #   - "6055:6055/udp"
+    #   - "6514:6514/udp"
     environment:
       TZ: Europe/Moscow
       KIBANA_HOST: ${FKIBANA_HOST}
@@ -121,7 +128,7 @@ services:
         condition: service_healthy
     networks:
       nf-net:
-        ipv4_address: 192.168.30.4
+        ipv4_address: 192.168.30.5
     environment:
       TZ: Europe/Moscow
     volumes:

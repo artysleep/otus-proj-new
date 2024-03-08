@@ -14,15 +14,10 @@
 ![Screenshot 2024-02-26 174532](https://github.com/artysleep/otus-proj-new/assets/7562889/fda3612a-42e0-4a6c-954d-748b7264ac37)
 
 Перед началом работы необходимо скорректировать .env по примеру example_env, а так же если запуск осуществляется в первый раз необходимо подготовить (настроить Data Stream в Elasticsearch, загрузить дефолтные Dashboards Filebeat с интересующим индексом).
-Используемые pipline указаны в reqs.txt. Для запуска можно сразу скопировать nf-app.service в /etc/systemd/system и в дальнейшем запускать:
-```sh
-systemctl start nf-app
-
-```
 Запуск проекта через docker-compose:
 ```sh
 ✔ ~/docker/otus-proj [master|✚ 4…2] 
-11:12 $ docker-compose up -d
+11:12 $ docker compose up -d
 [+] Running 6/6
  ⠿ Network nf-net          Created                                                                                                                                                                                          0.2s
  ⠿ Volume "nf-log-volume"  Created                                                                                                                                                                                          0.0s
